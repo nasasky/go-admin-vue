@@ -1,48 +1,119 @@
 <template>
-  <div class="table-box">
-    <ProTable ref="proTableRef" title="菜单列表" row-key="id" :indent="20" :columns="columns" :request-api="getTableList"
-      :pagination="false" :default-expand-all="defaultExpandAllKey">
-      <!-- 表格 header 按钮 -->
-      <template #tableHeader>
-        <el-button type="primary" :icon="CirclePlus" @click="openAddEdit('新增菜单')">
-          新增菜单
-        </el-button>
-        <el-button type="info" :icon="Sort" @click="changeExpand"> 展开/折叠 </el-button>
-      </template>
-      <!-- 图标 -->
-      <template #icon="scope">
-        <el-icon :size="18" v-if="scope.row.meta.icon">
-          <SvgIcon v-if="scope.row.meta.icon.startsWith('svg-')" :name="scope.row.meta.icon.substring(4)" />
-          <component v-else :is="scope.row.meta.icon" />
-        </el-icon>
-      </template>
-      <template #useDataScope="scope">
-        <el-switch v-if="scope.row.menuTypeCd == '1002002'" v-model="scope.row.meta.useDataScope" :active-value="'T'"
-          :inactive-value="'F'" :loading="switchLoading" :before-change="() => changeDataScope(scope.row)" />
-      </template>
+  <div class="main-box">
+    <div class="table-box">
+      <ProTable 
+        ref="proTableRef" 
+        title="菜单列表" 
+        row-key="id" 
+        :indent="20" 
+        :columns="columns" 
+        :request-api="getTableList"
+        :pagination="false" 
+        :default-expand-all="defaultExpandAllKey"
+        :border="false"
+      >
+        <!-- 表格 header 按钮 -->
+        <template #tableHeader>
+          <div class="header-button-group">
+            <el-button type="primary" :icon="CirclePlus" @click="openAddEdit('新增菜单')">
+              新增菜单
+            </el-button>
+            <el-button :icon="Sort" @click="changeExpand">
+              {{ defaultExpandAllKey ? '折叠' : '展开' }}
+            </el-button>
+          </div>
+        </template>
 
-      <!-- 菜单操作 -->
-      <template #operation="{ row }">
-        <el-button type="primary" v-if="row.menuTypeCd !== MENU_BTN" link :icon="CirclePlus"
-          @click="openAddEdit('新增菜单', row)">
-          新增
-        </el-button>
-        <el-button type="primary" link :icon="EditPen" @click="openAddEdit('编辑菜单', row, false)">
-          编辑
-        </el-button>
-        <el-button type="primary" link :icon="Delete" @click="deleteInfo(row)"> 删除 </el-button>
-       
-      </template>
-    </ProTable>
-    <MenuForm ref="menuFormRef" />
-    <el-dialog v-model="showSqlDialog" :title="sqlDialTitle" width="80%">
-      <HighCode :code="sqlData" language="sql" title="菜单SQL" class="sql-box" />
-    </el-dialog>
+        <!-- 图标 -->
+        <template #icon="scope">
+          <div class="icon-preview">
+            <el-icon :size="18" v-if="scope.row.meta.icon">
+              <SvgIcon v-if="scope.row.meta.icon.startsWith('svg-')" :name="scope.row.meta.icon.substring(4)" />
+              <component v-else :is="scope.row.meta.icon" />
+            </el-icon>
+          </div>
+        </template>
+
+        <!-- 类型 -->
+        <template #menuTypeCd="{ row }">
+          <el-tag :type="getMenuTypeTag(row.menuTypeCd)">
+            {{ getMenuTypeName(row.menuTypeCd) }}
+          </el-tag>
+        </template>
+
+        <!-- 状态开关 -->
+        <template #useDataScope="scope">
+          <el-switch 
+            v-if="scope.row.menuTypeCd == '1002002'"
+            v-model="scope.row.meta.useDataScope" 
+            :active-value="'T'"
+            :inactive-value="'F'" 
+            :loading="switchLoading" 
+            :before-change="() => changeDataScope(scope.row)"
+          />
+        </template>
+
+        <!-- 菜单操作 -->
+        <template #operation="{ row }">
+          <div class="operation-group">
+            <el-button 
+              type="primary" 
+              v-if="row.menuTypeCd !== MENU_BTN" 
+              link 
+              :icon="CirclePlus"
+              @click="openAddEdit('新增子菜单', row)"
+            >
+              新增
+            </el-button>
+            <el-button 
+              type="primary" 
+              link 
+              :icon="EditPen" 
+              @click="openAddEdit('编辑菜单', row, false)"
+            >
+              编辑
+            </el-button>
+            <el-popconfirm
+              title="确定删除此菜单及其子菜单吗？"
+              @confirm="deleteInfo(row)"
+            >
+              <template #reference>
+                <el-button 
+                  type="danger" 
+                  link 
+                  :icon="Delete"
+                >
+                  删除
+                </el-button>
+              </template>
+            </el-popconfirm>
+          </div>
+        </template>
+      </ProTable>
+
+      <!-- 菜单表单 -->
+      <MenuForm ref="menuFormRef" />
+
+      <!-- SQL预览弹框 -->
+      <el-dialog 
+        v-model="showSqlDialog" 
+        :title="sqlDialTitle" 
+        width="80%"
+        destroy-on-close
+      >
+        <HighCode 
+          :code="sqlData" 
+          language="sql" 
+          title="菜单SQL" 
+          class="sql-box" 
+        />
+      </el-dialog>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Delete, EditPen, CirclePlus, SoldOut, Sort } from '@element-plus/icons-vue';
+import { Delete, EditPen, CirclePlus, Sort } from '@element-plus/icons-vue';
 import ProTable from '@/components/ProTable/index.vue';
 import { addMenu, deleteMenu, editMenu, exportMenuSql, getMenuInfo, getMenuList, chaneDataRole } from '@/api/modules/system/menu';
 import MenuForm from '@/views/system/menuMange/components/MenuForm.vue';
@@ -66,160 +137,224 @@ const sqlData = ref<string>('');
 const rowSqlName = ref<any>({});
 const optionsStore = useOptionsStore();
 const proTableRef = ref<ProTableInstance>();
-
-// 获取table列表
-const getTableList = (params: IMenu.Query) => getMenuList(params);
-
+const switchLoading = ref(false);
 const defaultExpandAllKey = ref(true);
 
 // 表格配置项
 const columns: ColumnProps<Menu.MenuOptions>[] = [
-  { type: 'index', label: '#' },
-  { prop: 'meta.title', label: '名称', align: 'left' },
-  // {
-  //   prop: 'menuTypeCd',
-  //   label: '类型',
-  //   width: 100,
-  //   tag: true,
-  //   enum: optionsStore.getDictOptions('menu_type'),
-  //   fieldNames: { label: 'codeName', value: 'id', tagType: 'callbackShowStyle' }
-  // },
-  { prop: 'meta.icon', label: '图标', width: 100 },
-  // { prop: 'sort', label: '排序', width: 100 },
-  { prop: 'name', label: '路由名称' },
-  { prop: 'path', label: '路由地址' },
-  { prop: 'key', label: '组件路径' },
-  // {
-  //   prop: 'useDataScope',
-  //   label: '数据权限支持',
-  //   width: 100
-  // },
-  // { prop: 'permissions', label: '权限', tag: true, width: 200 },
-  { prop: 'operation', label: '操作', width: 300, fixed: 'right' }
+  { prop: 'meta.title', label: '菜单名称', align: 'left' ,width: 200},
+  { 
+    prop: 'menuTypeCd', 
+    label: '类型', 
+    width: 100,
+  },
+  { prop: 'meta.icon', label: '图标', width: 80 },
+  { prop: 'sort', label: '排序', width: 80 },
+  { prop: 'name', label: '路由名称', width: 150, showOverflowTooltip: true },
+  { prop: 'path', label: '路由地址', width: 180, showOverflowTooltip: true },
+  { prop: 'key', label: '组件路径', width: 180, showOverflowTooltip: true },
+  { 
+    prop: 'useDataScope', 
+    label: '数据权限', 
+    width: 100,
+    align: 'center'
+  },
+  { 
+    prop: 'operation', 
+    label: '操作', 
+    width: 200, 
+    fixed: 'right',
+    align: 'center'
+  }
 ];
-const switchLoading = ref(false);
-// 打开 drawer(新增、查看、编辑)
+
+// 获取菜单类型标签样式
+const getMenuTypeTag = (type: string) => {
+  switch (type) {
+    case MENU_DIR: return 'primary';
+    case MENU_PAGE: return 'success';
+    case MENU_BTN: return 'info';
+    default: return '';
+  }
+};
+
+// 获取菜单类型名称
+const getMenuTypeName = (type: string) => {
+  const menuType = optionsStore.getDictOptions('menu_type').find(item => item.id === type);
+  return menuType?.codeName || '-';
+};
+
+// 获取table列表
+const getTableList = (params: IMenu.Query) => getMenuList(params);
+
+// 打开表单(新增、编辑)
 const menuFormRef = ref<InstanceType<typeof MenuForm>>();
 const openAddEdit = async (title: string, row: any = {}, isAdd = true) => {
-  let orig = {};
-  if (isAdd) {
-    console.log('新增菜单', row);
-    let pid = row.id || '0';
-    const sort = presort(row, pid);
-    orig = {
-      pid: pid,
-      icon: '',
-      sort: sort,
-      parent_id: pid,
-      menuTypeCd: row.menuTypeCd === MENU_DIR ? MENU_PAGE : row.menuTypeCd === MENU_PAGE ? MENU_BTN : MENU_DIR,
-      is_link: 'F',
-      is_hidden: 'F',
-      is_full: 'F',
-      is_affix: 'F',
-      isKeepAlive: 'F'
-    };
-    console.log('新增菜单 orig', orig);
-  } else {
-    const { data } = await getMenuInfo({ id: row.id });
-    if (!data) {
-      ElMessage.error({ message: `获取菜单详情失败！` });
-      return;
+  try {
+    let formData = {};
+    if (isAdd) {
+      const pid = row.id || '0';
+      const sort = await calculateSort(row, pid);
+      formData = {
+        pid,
+        parent_id: pid,
+        icon: '',
+        sort,
+        menuTypeCd: getNextMenuType(row.menuTypeCd),
+        is_link: 'F',
+        is_hidden: 'F',
+        is_full: 'F',
+        is_affix: 'F',
+        isKeepAlive: 'F'
+      };
+    } else {
+      const { data } = await getMenuInfo({ id: row.id });
+      if (!data) {
+        throw new Error('获取菜单详情失败');
+      }
+      formData = data;
     }
-    orig = data;
+
+    const params = {
+      title,
+      row: { ...formData },
+      api: isAdd ? addMenu : editMenu,
+      getTableList: proTableRef.value?.getTableList
+    };
+    menuFormRef.value?.acceptParams(params);
+  } catch (error) {
+    console.error('打开表单失败:', error);
+    ElMessage.error('打开表单失败，请重试');
   }
-  const params = {
-    title,
-    row: { ...orig },
-    api: isAdd ? addMenu : editMenu,
-    getTableList: proTableRef.value?.getTableList
-  };
-  menuFormRef.value?.acceptParams(params);
 };
 
-const presort = (row: any = {}, pid: number) => {
-  let cnt;
-  if (pid == 0) {
-    cnt = proTableRef.value?.tableData?.length || 0;
-  } else {
-    cnt = row?.children?.length || 0;
+// 计算排序值
+const calculateSort = async (row: any = {}, pid: string) => {
+  const baseSort = 100;
+  if (pid === '0') {
+    return ((proTableRef.value?.tableData?.length || 0) + 1) * baseSort;
   }
-  return (cnt + 1) * 100;
+  return ((row?.children?.length || 0) + 1) * baseSort;
 };
-// 删除信息
+
+// 获取下一级菜单类型
+const getNextMenuType = (currentType?: string) => {
+  switch (currentType) {
+    case MENU_DIR: return MENU_PAGE;
+    case MENU_PAGE: return MENU_BTN;
+    default: return MENU_DIR;
+  }
+};
+
+// 删除菜单
 const deleteInfo = async (params: Menu.MenuOptions) => {
   if (IS_PREVIEW) {
-    return ElMessage.warning({ message: '预览环境，禁止删除菜单，请谅解！' });
+    ElMessage.warning('预览环境，禁止删除菜单，请谅解！');
+    return;
   }
-  await useHandleData(deleteMenu, { ids: [params.id] }, `删除【${params?.meta?.title}】菜单及以下菜单`);
-  proTableRef.value?.getTableList();
+  try {
+    await useHandleData(deleteMenu, { ids: [params.id] }, `删除【${params?.meta?.title}】菜单及其子菜单`);
+    proTableRef.value?.getTableList();
+  } catch (error) {
+    console.error('删除菜单失败:', error);
+  }
 };
 
+// 展示SQL信息
 const showSqlInfo = async (row: any = {}) => {
-  rowSqlName.value = row;
-  const { data } = await exportMenuSql({ ids: [row.id] });
-  showSqlDialog.value = true;
-  sqlData.value = data;
+  try {
+    rowSqlName.value = row;
+    const { data } = await exportMenuSql({ ids: [row.id] });
+    sqlData.value = data;
+    showSqlDialog.value = true;
+  } catch (error) {
+    console.error('获取SQL失败:', error);
+    ElMessage.error('获取SQL失败，请重试');
+  }
 };
 
+// SQL弹框标题
 const sqlDialTitle = computed(() => {
-  return 'SQL [' + rowSqlName.value?.meta?.title + ' ]' || 'SQL []';
+  return `SQL [${rowSqlName.value?.meta?.title || ''}]`;
 });
 
+// 展开/折叠
 const changeExpand = () => {
   defaultExpandAllKey.value = !defaultExpandAllKey.value;
   proTableRef.value?.refresh();
 };
-const changeDataScope = (params: Menu.MenuOptions) => {
-  switchLoading.value = true;
-  const menuId = params.id;
-  if (IS_PREVIEW && menuId == '85b54322630f43a39296488a5e76ba16') {
-    switchLoading.value = false;
-    ElMessage.warning({ message: '预览环境，禁止修改，请谅解！' });
+
+// 切换数据权限
+const changeDataScope = async (params: Menu.MenuOptions) => {
+  if (switchLoading.value) return false;
+  
+  if (IS_PREVIEW && params.id === '85b54322630f43a39296488a5e76ba16') {
+    ElMessage.warning('预览环境，禁止修改，请谅解！');
     return false;
   }
-  const handleSuccess = (resolve: (value: boolean | PromiseLike<boolean>) => void) => {
-    setTimeout(() => {
-      switchLoading.value = false;
-      ElMessage.success('切换数据权限成功');
-      resolve(true);
-    }, 200);
-  };
 
-  const handleError = (reject: (reason?: any) => void) => {
-    setTimeout(() => {
-      switchLoading.value = false;
-      reject();
-    }, 200);
-  };
-
-  return new Promise((resolve, reject) => {
+  try {
+    switchLoading.value = true;
+    
     if (params.meta.useDataScope === 'T') {
-      ElMessageBox.confirm(
-        `您确认要关闭菜单 [${params.meta.title}] 数据权限支持吗? 此操作有可能导致数据权限失效 ！！`,
+      await ElMessageBox.confirm(
+        `确认要关闭菜单 [${params.meta.title}] 的数据权限支持吗？此操作可能导致数据权限失效！`,
         '温馨提示',
         { type: 'warning' }
-      )
-        .then(() => {
-          chaneDataRole({ id: menuId })
-            .then(() => handleSuccess(resolve))
-            .catch(() => handleError(reject));
-        })
-        .catch(() => {
-          switchLoading.value = false;
-        });
-    } else {
-      chaneDataRole({ id: menuId })
-        .then(() => handleSuccess(resolve))
-        .catch(() => handleError(reject));
+      );
     }
-  });
+    
+    await chaneDataRole({ id: params.id });
+    ElMessage.success('切换数据权限成功');
+    return true;
+  } catch (error) {
+    console.error('切换数据权限失败:', error);
+    return false;
+  } finally {
+    switchLoading.value = false;
+  }
 };
 </script>
+
 <style scoped lang="scss">
+.main-box {
+  .header-button-group {
+    display: flex;
+    gap: 12px;
+  }
+
+  .icon-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    :deep(.el-icon) {
+      color: var(--el-text-color-regular);
+    }
+  }
+
+  .operation-group {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+
+  :deep(.el-tag) {
+    min-width: 60px;
+    text-align: center;
+  }
+}
+
 .sql-box {
   margin: 0 auto;
   width: 90%;
   max-height: 60vh;
   overflow: auto;
+  border-radius: 4px;
+  
+  :deep(pre) {
+    margin: 0;
+    padding: 16px;
+  }
 }
 </style>
