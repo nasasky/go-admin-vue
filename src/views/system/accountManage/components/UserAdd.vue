@@ -1,33 +1,26 @@
 <template>
-  <el-dialog v-model="visible" :title="`${paramsProps.title}`" :destroy-on-close="true" width="580px" draggable
+  <el-dialog v-model="visible" :title="`${paramsProps.title}`" :destroy-on-close="true" width="720px" draggable
     append-to-body>
     <el-form ref="ruleFormRef" label-width="80px" label-suffix=" :" :rules="rules" :model="paramsProps.row"
-      @submit.enter.prevent="handleSubmit" class="form__label">
-      <el-row>
+      @submit.enter.prevent="handleSubmit" class="user-form">
+      <el-row :gutter="20">
         <el-col :span="12">
           <el-form-item label="名称" prop="username">
-            <template #label>
-              <el-space :size="2">
-                <span>名称</span>
-                <el-tooltip effect="dark" placement="top">
-                  <i :class="'iconfont icon-yiwen'" />
-                </el-tooltip>
-              </el-space>
-              <span>&nbsp;:</span>
-            </template>
-            <el-input v-model="paramsProps.row.username" placeholder="请填写账户" clearable />
+            <el-input v-model="paramsProps.row.username" placeholder="请填写账户名称" clearable :maxlength="32"
+              show-word-limit />
           </el-form-item>
         </el-col>
         <el-col :span="12">
-          <el-form-item label="登录密码" prop="password">
-            <el-input v-model="paramsProps.row.password" placeholder="请填写登录密码" clearable />
+          <el-form-item label="密码" prop="password">
+            <el-input v-model="paramsProps.row.password" type="password" placeholder="请填写登录密码" clearable
+              show-password :maxlength="32" show-word-limit />
           </el-form-item>
         </el-col>
       </el-row>
-      <el-row>
+      <el-row :gutter="20">
         <el-col :span="12">
           <el-form-item label="手机号" prop="phone">
-            <el-input v-model="paramsProps.row.phone" placeholder="请填写手机号" clearable />
+            <el-input v-model="paramsProps.row.phone" placeholder="请填写手机号" clearable :maxlength="11" />
           </el-form-item>
         </el-col>
         <el-col :span="12">
@@ -36,26 +29,25 @@
           </el-form-item>
         </el-col>
       </el-row>
-      <el-row>
+      <el-row :gutter="20">
         <el-col :span="12">
           <el-form-item label="角色" prop="role_id">
-            <el-select v-model="paramsProps.row.role_id" clearable placeholder="请选择性别">
-
+            <el-select v-model="paramsProps.row.role_id" placeholder="请选择角色" clearable style="width: 100%">
               <el-option v-for="item in roleList" :key="item.id" :label="item.role_name" :value="item.id" />
             </el-select>
           </el-form-item>
         </el-col>
         <el-col :span="12">
           <el-form-item label="生日" prop="birthday">
-            <el-date-picker v-model="paramsProps.row.birthday" type="date" placeholder="选择生日"
-              value-format="YYYY-MM-DD" />
+            <el-date-picker v-model="paramsProps.row.birthday" type="date" placeholder="选择生日" value-format="YYYY-MM-DD"
+              style="width: 100%" :disabled-date="(date) => date > new Date()" />
           </el-form-item>
         </el-col>
       </el-row>
-      <el-row>
+      <el-row :gutter="20">
         <el-col :span="12">
           <el-form-item label="性别" prop="sex">
-            <el-select v-model="paramsProps.row.sex" clearable placeholder="请选择性别">
+            <el-select v-model="paramsProps.row.sex" placeholder="请选择性别" clearable style="width: 100%">
               <el-option label="未知" :value="0" />
               <el-option label="男" :value="1" />
               <el-option label="女" :value="2" />
@@ -66,30 +58,33 @@
           <el-form-item label="状态" prop="enable">
             <el-radio-group v-model="paramsProps.row.enable">
               <el-radio-button v-for="item in optionsStore.getDictOptions('account_type')" :key="item.code"
-                :label="item.codeName" :value="item.code" />
+                :label="item.code">
+                {{ item.codeName }}
+              </el-radio-button>
             </el-radio-group>
           </el-form-item>
         </el-col>
       </el-row>
-
       <el-row>
-        <el-form-item label="头像" prop="logo">
-          <UploadImg v-model:image-url="paramsProps.row.logo" @change="fileChange" dir="user" width="135px"
-            height="135px" border-radius="50%">
-            <template #empty>
-              <el-icon>
-                <Avatar />
-              </el-icon>
-              <span>请上传头像</span>
-            </template>
-            <template #tip> 头像大小不能超过 3M </template>
-          </UploadImg>
-        </el-form-item>
+        <el-col :span="24">
+          <el-form-item label="头像" prop="logo">
+            <UploadImg v-model:image-url="paramsProps.row.logo" @change="fileChange" dir="user" width="120px"
+              height="120px" border-radius="50%">
+              <template #empty>
+                <el-icon>
+                  <Avatar />
+                </el-icon>
+                <span>请上传头像</span>
+              </template>
+              <template #tip>头像大小不能超过 2M</template>
+            </UploadImg>
+          </el-form-item>
+        </el-col>
       </el-row>
     </el-form>
     <template #footer>
-      <el-button @click="visible = false"> 取消 </el-button>
-      <el-button type="primary" @click="handleSubmit"> 确定 </el-button>
+      <el-button @click="closeDialog">取 消</el-button>
+      <el-button type="primary" @click="handleSubmit">确 定</el-button>
     </template>
   </el-dialog>
 </template>
@@ -111,8 +106,15 @@ const rules = reactive({
     { pattern: /^[a-zA-Z0-9_]+$/, message: '用户名只能包含字母、数字和下划线', trigger: 'blur' },
     { 
       validator: (rule: any, value: string, callback: Function) => {
-        if (/^\d+$/.test(value)) callback(new Error('用户名不能为纯数字'));
-        else callback();
+        if (!value) {
+          callback();
+          return;
+        }
+        if (/^\d+$/.test(value)) {
+          callback(new Error('用户名不能为纯数字'));
+        } else {
+          callback();
+        }
       }, 
       trigger: 'blur' 
     }
@@ -122,10 +124,23 @@ const rules = reactive({
     { min: 6, max: 32, message: '密码长度应在6到32个字符之间', trigger: 'blur' },
     { 
       validator: (rule: any, value: string, callback: Function) => {
-        // 至少包含一个大写字母、小写字母、数字和特殊字符
-        const strongRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/;
-        if (!strongRegex.test(value)) {
-          callback(new Error('密码必须包含大小写字母、数字和特殊字符'));
+        if (!value) {
+          callback();
+          return;
+        }
+        const hasUpperCase = /[A-Z]/.test(value);
+        const hasLowerCase = /[a-z]/.test(value);
+        const hasNumber = /\d/.test(value);
+        const hasSpecial = /[@$!%*?&]/.test(value);
+        
+        if (!hasUpperCase) {
+          callback(new Error('密码必须包含大写字母'));
+        } else if (!hasLowerCase) {
+          callback(new Error('密码必须包含小写字母'));
+        } else if (!hasNumber) {
+          callback(new Error('密码必须包含数字'));
+        } else if (!hasSpecial) {
+          callback(new Error('密码必须包含特殊字符(@$!%*?&)'));
         } else {
           callback();
         }
@@ -142,30 +157,10 @@ const rules = reactive({
     { type: 'email', message: '请输入正确的邮箱地址', trigger: 'blur' }
   ],
   role_id: [
-    { required: true, message: '角色是必填项', trigger: 'change' },
-    {
-      validator: (rule: any, value: any, callback: Function) => {
-        if (value && (!Number.isInteger(Number(value)) || Number(value) <= 0)) {
-          callback(new Error('请选择有效的角色'));
-        } else {
-          callback();
-        }
-      },
-      trigger: 'change'
-    }
+    { required: true, message: '角色是必填项', trigger: 'change' }
   ],
   sex: [
-    { required: false, message: '请选择性别', trigger: 'change' },
-    {
-      validator: (rule: any, value: any, callback: Function) => {
-        if (value !== undefined && ![0, 1, 2].includes(Number(value))) {
-          callback(new Error('性别选择无效'));
-        } else {
-          callback();
-        }
-      },
-      trigger: 'change'
-    }
+    { required: false, message: '请选择性别', trigger: 'change' }
   ],
   enable: [
     { required: true, message: '请选择账户状态', trigger: 'change' }
@@ -174,25 +169,24 @@ const rules = reactive({
     { required: false, trigger: 'change' },
     {
       validator: (rule: any, value: string, callback: Function) => {
-        if (value) {
-          const birthDate = new Date(value);
-          const today = new Date();
-          if (birthDate > today) {
-            callback(new Error('生日不能晚于今天'));
-          } else if (birthDate.getFullYear() < 1900) {
-            callback(new Error('生日年份不正确'));
-          } else {
-            callback();
-          }
+        if (!value) {
+          callback();
+          return;
+        }
+        const birthDate = new Date(value);
+        const today = new Date();
+        const minDate = new Date('1900-01-01');
+        
+        if (birthDate > today) {
+          callback(new Error('生日不能晚于今天'));
+        } else if (birthDate < minDate) {
+          callback(new Error('生日不能早于1900年'));
         } else {
           callback();
         }
       },
-      trigger: 'blur'
+      trigger: 'change'
     }
-  ],
-  logo: [
-    { required: false, message: '请上传头像', trigger: 'change' }
   ]
 });
 const roleList = ref([] as any[]);
@@ -205,12 +199,29 @@ const paramsProps = ref<View.DefaultParams>({
   getTableList: undefined
 });
 
+// 默认表单数据
+const defaultFormData = {
+  username: '',
+  password: '',
+  phone: '',
+  email: '',
+  role_id: undefined,
+  sex: 0,
+  enable: 1,
+  birthday: '',
+  logo: ''
+};
+
 // 接收父组件传过来的参数
 const acceptParams = (params: View.DefaultParams) => {
-  paramsProps.value = params;
+  paramsProps.value = {
+    ...params,
+    row: { ...defaultFormData, ...params.row }
+  };
   visible.value = true;
   getRoleListdata();
 };
+
 //获取角色列表
 const getRoleListdata = async () => {
 
@@ -228,6 +239,18 @@ const getRoleListdata = async () => {
 
 const emit = defineEmits(['submit']);
 
+// 重置表单
+const resetForm = () => {
+  ruleFormRef.value?.resetFields();
+  paramsProps.value.row = { ...defaultFormData };
+};
+
+// 关闭弹窗
+const closeDialog = () => {
+  resetForm();
+  visible.value = false;
+};
+
 // 提交数据（新增/编辑）
 const ruleFormRef = ref();
 const handleSubmit = () => {
@@ -238,9 +261,9 @@ const handleSubmit = () => {
       ElMessage.success({ message: `${paramsProps.value.title}成功！` });
       paramsProps.value.getTableList!();
       emit('submit');
-      visible.value = false;
+      closeDialog();
     } catch (error) {
-      console.log(error);
+      console.error('提交失败:', error);
     }
   });
 };
@@ -255,4 +278,35 @@ defineExpose({
 });
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.user-form {
+  :deep(.el-form-item) {
+    margin-bottom: 18px;
+    .el-form-item__label {
+      font-weight: 500;
+    }
+  }
+  :deep(.el-input-number) {
+    width: 100%;
+  }
+  :deep(.el-radio-group) {
+    width: 100%;
+    display: flex;
+    .el-radio-button {
+      flex: 1;
+      .el-radio-button__inner {
+        width: 100%;
+      }
+    }
+  }
+  :deep(.el-upload) {
+    border: 1px dashed var(--el-border-color);
+    border-radius: 50%;
+    overflow: hidden;
+    transition: var(--el-transition-duration-fast);
+    &:hover {
+      border-color: var(--el-color-primary);
+    }
+  }
+}
+</style>

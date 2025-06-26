@@ -101,6 +101,8 @@ const closeOtherTab = () => {
 const closeAllTab = () => {
   tabStore.closeMultipleTab();
   router.push(HOME_URL);
+  // 关闭所有标签页时，折叠左侧菜单
+  appStore.changeIsCollapse(true);
 };
 </script>
 

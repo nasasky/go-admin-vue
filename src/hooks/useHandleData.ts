@@ -22,13 +22,23 @@ export const useHandleData = (
       type: confirmType,
       draggable: true
     }).then(async () => {
-      const res = await api(params);
-      if (!res) return reject(false);
-      ElMessage({
-        type: 'success',
-        message: `${message}成功!`
-      });
-      resolve(true);
+      try {
+        await api(params);
+        ElMessage({
+          type: 'success',
+          message: `${message}成功!`
+        });
+        resolve(true);
+      } catch (error) {
+        ElMessage({
+          type: 'error',
+          message: `${message}失败!`
+        });
+        reject(error);
+      }
+    }).catch(() => {
+      // User clicked cancel
+      resolve(false);
     });
   });
 };

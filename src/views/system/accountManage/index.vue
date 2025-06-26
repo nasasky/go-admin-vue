@@ -23,11 +23,10 @@
       >
         <!-- 表格 header 按钮 -->
         <template #tableHeader="scope">
-          <el-button  type="primary" :icon="CirclePlus" @click="openUserAdd('新增用户')">
+          <el-button type="primary" :icon="CirclePlus" @click="openUserAdd('新增用户')">
             新增用户
           </el-button>
           <el-button
-           
             type="danger"
             :icon="Delete"
             plain
@@ -36,21 +35,49 @@
           >
             批量删除
           </el-button>
-     
           <el-button type="info" :icon="Unlock" plain :disabled="!scope.isSelected" @click="unlock(scope.selectedListIds)">
             解锁
           </el-button>
         </template>
 
-        <template #username="{ row }">
-          <el-button type="primary" link>
-            {{ row?.username }}
-          </el-button>
+        <template #logo="{ row }">
+          <el-avatar 
+            :size="40" 
+            :src="row.logo || 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'"
+            :class="['user-avatar', { 'no-image': !row.logo }]"
+          />
         </template>
 
-        <template #logo="{ row }">
-          <el-image v-if="row.logo" :src="row.logo" />
-          <div v-else>--</div>
+        <template #username="{ row }">
+          <span class="username-text">{{ row.username }}</span>
+        </template>
+
+        <template #nickname="{ row }">
+          <span>{{ row.nickname || '--' }}</span>
+        </template>
+
+        <template #phone="{ row }">
+          <span>{{ row.phone || '--' }}</span>
+        </template>
+
+        <template #role_name="{ row }">
+          <el-tag size="small" type="info" effect="plain">
+            {{ row.role_name || '--' }}
+          </el-tag>
+        </template>
+
+        <template #enable="{ row }">
+          <el-tag :type="row.enable === 1 ? 'success' : 'danger'" size="small">
+            {{ row.enable === 1 ? '启用' : '禁用' }}
+          </el-tag>
+        </template>
+
+        <template #last_login_time="{ row }">
+          {{ row.last_login_time || '--' }}
+        </template>
+
+        <template #create_time="{ row }">
+          {{ row.create_time || '--' }}
         </template>
 
         <template #deptInfo="{ row }">
@@ -66,17 +93,16 @@
         </template>
 
         <template #operation="{ row }">
-          <div class="btn-group">
+          <div class="operation-btns">
             <el-button type="primary" link :icon="EditPen" @click="openUserEdit('编辑用户', row)">
               编辑
             </el-button>
-            <el-button v-auth="'sys.user.unlock_btn'" type="primary" :icon="Unlock" link @click="unlock(row.id)">
+            <el-button type="primary" link :icon="Unlock" @click="unlock([row.id])">
               解锁
             </el-button>
             <el-button type="danger" link :icon="Delete" @click="deleteInfo(row)">
               删除
             </el-button>
-           
           </div>
         </template>
       </ProTable>
@@ -113,45 +139,50 @@ import UserPermissions from '@/views/system/accountManage/components/UserPermiss
 import type { ColumnProps, ProTableInstance, SearchProps } from '@/components/ProTable/interface';
 import type { IUser } from '@/api/interface/system/user';
 import type { IRole } from '@/api/interface/system/role';
-import { reactive, ref } from 'vue';
+import { reactive, ref, onMounted } from 'vue';
 import SvgIcon from '@/components/SvgIcon/index.vue';
 import UserDeptForm from '@/views/system/accountManage/components/UserDeptForm.vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import UserDataPermissions from '@/views/system/accountManage/components/UserDataPermissions.vue';
 import { IS_PREVIEW } from '@/config';
+
 defineOptions({
   name: 'AccountManage'
 });
 
 const optionsStore = useOptionsStore();
 
+// 初始化字典数据
+onMounted(async () => {
+  if (!optionsStore.isLoaded) {
+    await optionsStore.getAllDictList();
+  }
+});
+
 // 表格配置项
 const columns: ColumnProps<IRole.Info>[] = [
   { type: 'selection', width: 55, selectable: row => row.id !== 1 },
-  { prop: 'username', label: '账户', width: 150, align: 'left' },
-  { prop: 'username', label: '昵称', width: 150, align: 'left' },
-  { prop: 'phone', label: '手机号', width: 120 },
-  
-  {
-    prop: 'user_type',
-    label: '角色'
-  },
+  { prop: 'logo', label: '头像', width: 70 },
+  { prop: 'username', label: '账户', width: 120, align: 'left', search: { el: 'input' } },
+  { prop: 'nickname', label: '昵称', width: 120, align: 'left' },
+  { prop: 'phone', label: '手机号', width: 120, search: { el: 'input' } },
+  { prop: 'role_name', label: '角色', width: 120 },
   {
     prop: 'enable',
     label: '状态',
     tag: true,
-    enum: optionsStore.getDictOptions('account_type'),
     width: 80,
+    enum: optionsStore.getDictOptions('account_status'),
     fieldNames: { label: 'codeName', value: 'code', tagType: 'callbackShowStyle' }
   },
-  { prop: 'create_time', label: '创建时间', width: 165 },
+  { prop: 'last_login_time', label: '最后登录', width: 160 },
+  { prop: 'create_time', label: '创建时间', width: 160 },
   { prop: 'operation', label: '操作', width: 260, fixed: 'right' }
 ];
 
 const searchColumns: SearchProps[] = [
   { prop: 'username', label: '账户', el: 'input' },
   { prop: 'phone', label: '手机号', el: 'input' },
-
 ];
 
 // 获取 ProTable 元素，调用其获取刷新数据方法（还能获取到当前查询参数，方便导出携带参数）
@@ -332,5 +363,43 @@ const openUserDataPermissions = (title: string, row = {}) => {
 
 .el-button + .el-button + .el-dropdown {
   margin-left: 12px;
+}
+
+.main-box {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  .table-box {
+    flex: 1;
+    :deep(.operation-btns) {
+      .el-button {
+        padding: 5px 8px;
+        margin-right: 6px;
+        &:last-child {
+          margin-right: 0;
+        }
+      }
+    }
+    :deep(.el-tag) {
+      margin: 2px 4px;
+    }
+    :deep(.user-avatar) {
+      border: 1px solid #eee;
+      transition: transform 0.3s;
+      &:hover {
+        transform: scale(1.1);
+      }
+      &.no-image {
+        background-color: #f5f7fa;
+      }
+    }
+    :deep(.username-text) {
+      color: var(--el-color-primary);
+      cursor: pointer;
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
 }
 </style>
