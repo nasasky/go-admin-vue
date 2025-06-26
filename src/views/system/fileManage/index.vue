@@ -126,14 +126,14 @@ const proTableRef = ref<ProTableInstance>();
 
 // 表格配置项
 const columns: ColumnProps<ISysFile.Row>[] = [
-  { prop: 'path', label: '访问接口地址', width: 200 },
-  { prop: 'request_params', label: '请求参数', width: 120, showOverflowTooltip: true },
-  { prop: 'status_code', label: '状态码', width: 100 },
-  { prop: 'response_message', label: 'Message', width: 120, showOverflowTooltip: true },
-  { prop: 'response_body', label: '返回参数', width: 120 },
-  { prop: 'client_ip', label: 'IP地址', width: 140 },
-  { prop: 'timestamp', label: '访问时间', width: 180 },
-  { prop: 'username', label: '访问用户', width: 120 },
+  { prop: 'path', label: '访问接口地址',  },
+  { prop: 'request_params', label: '请求参数',showOverflowTooltip: true },
+  { prop: 'status_code', label: '状态码', },
+  { prop: 'response_message', label: 'Message',  showOverflowTooltip: true },
+  { prop: 'response_body', label: '返回参数'},
+  { prop: 'client_ip', label: 'IP地址'  },
+  { prop: 'timestamp', label: '访问时间' },
+  { prop: 'username', label: '访问用户' },
   { prop: 'url', label: '操作', width: 120, fixed: 'right' }
 ];
 

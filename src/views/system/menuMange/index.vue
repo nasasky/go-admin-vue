@@ -142,7 +142,7 @@ const defaultExpandAllKey = ref(true);
 
 // 表格配置项
 const columns: ColumnProps<Menu.MenuOptions>[] = [
-  { prop: 'meta.title', label: '菜单名称', align: 'left' ,width: 200},
+  { prop: 'meta.title', label: '菜单名称', align: 'left'},
   { 
     prop: 'menuTypeCd', 
     label: '类型', 
@@ -150,9 +150,9 @@ const columns: ColumnProps<Menu.MenuOptions>[] = [
   },
   { prop: 'meta.icon', label: '图标', width: 80 },
   { prop: 'sort', label: '排序', width: 80 },
-  { prop: 'name', label: '路由名称', width: 150, showOverflowTooltip: true },
-  { prop: 'path', label: '路由地址', width: 180, showOverflowTooltip: true },
-  { prop: 'key', label: '组件路径', width: 180, showOverflowTooltip: true },
+  { prop: 'name', label: '路由名称',  showOverflowTooltip: true },
+  { prop: 'path', label: '路由地址',  showOverflowTooltip: true },
+  { prop: 'key', label: '组件路径', showOverflowTooltip: true },
   { 
     prop: 'useDataScope', 
     label: '数据权限', 

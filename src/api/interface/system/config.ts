@@ -27,3 +27,34 @@ export namespace IConfig {
     isLock?: string;
   }
 }
+
+export interface SystemInfo {
+  id?: number
+  system_name: string
+  system_title: string
+  icp_number?: string
+  copyright?: string
+  status: 0 | 1
+  create_time?: string
+  update_time?: string
+}
+
+export interface SystemInfoReq extends SystemInfo {}
+
+export interface UpdateSystemInfoReq extends SystemInfo {
+  id: number
+}
+
+export interface SystemInfoListResult {
+  items: SystemInfo[]
+  total: number
+  page: number
+  page_size: number
+}
+
+export interface ApiResponse<T> {
+  code: number
+  message: string
+  data: T
+  originUrl?: string
+}

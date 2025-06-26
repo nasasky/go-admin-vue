@@ -1,7 +1,8 @@
 import http from '@/api';
 import { ADMIN_MODULE } from '@/api/helper/prefix';
 import type { IConfig } from '@/api/interface/system/config';
-import type { IPage } from '@/api/interface';
+import type { IPage, IResultData } from '@/api/interface';
+import type { SystemInfo, SystemInfoReq, UpdateSystemInfoReq, SystemInfoListResult, ApiResponse } from "@/api/interface/system/config"
 
 /**
  * 获取列表
@@ -38,3 +39,23 @@ export const editConfig = (params: IConfig.Form) => {
 export const deleteConfig = (params: { ids: number[] }) => {
   return http.delete(ADMIN_MODULE + `/sys-config`, params);
 };
+
+/** Add system info */
+export const addSystemInfo = (params: SystemInfoReq) => {
+  return http.post<ApiResponse<IResultData>>(ADMIN_MODULE + "/system/info/add", params)
+}
+
+/** Update system info */
+export const updateSystemInfo = (params: UpdateSystemInfoReq) => {
+  return http.put<ApiResponse<IResultData>>(ADMIN_MODULE + "/system/info/update", params)
+}
+
+/** Get system info */
+export const getSystemInfo = () => {
+  return http.get<ApiResponse<SystemInfo>>(ADMIN_MODULE + "/system/info")
+}
+
+/** Get system info list */
+export const getSystemInfoList = () => {
+  return http.get<ApiResponse<SystemInfoListResult>>(ADMIN_MODULE + "/system/info/list")
+}

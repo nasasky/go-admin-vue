@@ -163,10 +163,10 @@ onMounted(async () => {
 const columns: ColumnProps<IRole.Info>[] = [
   { type: 'selection', width: 55, selectable: row => row.id !== 1 },
   { prop: 'logo', label: '头像', width: 70 },
-  { prop: 'username', label: '账户', width: 120, align: 'left', search: { el: 'input' } },
-  { prop: 'nickname', label: '昵称', width: 120, align: 'left' },
-  { prop: 'phone', label: '手机号', width: 120, search: { el: 'input' } },
-  { prop: 'role_name', label: '角色', width: 120 },
+  { prop: 'username', label: '账户', align: 'left' },
+  { prop: 'nickname', label: '昵称',  align: 'left' },
+  { prop: 'phone', label: '手机号' },
+  { prop: 'role_name', label: '角色' },
   {
     prop: 'enable',
     label: '状态',
@@ -175,8 +175,8 @@ const columns: ColumnProps<IRole.Info>[] = [
     enum: optionsStore.getDictOptions('account_status'),
     fieldNames: { label: 'codeName', value: 'code', tagType: 'callbackShowStyle' }
   },
-  { prop: 'last_login_time', label: '最后登录', width: 160 },
-  { prop: 'create_time', label: '创建时间', width: 160 },
+  { prop: 'last_login_time', label: '最后登录' },
+  { prop: 'create_time', label: '创建时间' },
   { prop: 'operation', label: '操作', width: 260, fixed: 'right' }
 ];
 
