@@ -1,0 +1,21 @@
+# 检查 nginx 容器是否存在
+if docker ps -a --format '{{.Names}}' | grep -q '^nginx$'; then
+  docker stop nginx || true
+  docker rm nginx || true
+else
+  echo "Nginx container not found, will create a new one"
+fi
+
+# 确保目录存在
+mkdir -p /mydata/nginx/html/admin
+
+# 复制构建文件
+cp -r /mydata/jenkins_home/workspace/admin_vue/dist/* /mydata/nginx/html/admin/
+
+# 创建新的 nginx 容器
+docker run -d --name nginx \
+  -p 80:80 \
+  -v /mydata/nginx/html:/usr/share/nginx/html \
+  nginx:latest
+
+echo "Deployment completed successfully"
