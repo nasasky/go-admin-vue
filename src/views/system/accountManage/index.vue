@@ -66,11 +66,7 @@
           </el-tag>
         </template>
 
-        <template #enable="{ row }">
-          <el-tag :type="row.enable === 1 ? 'success' : 'danger'" size="small">
-            {{ row.enable === 1 ? '启用' : '禁用' }}
-          </el-tag>
-        </template>
+      
 
         <template #last_login_time="{ row }">
           {{ row.last_login_time || '--' }}
@@ -172,7 +168,7 @@ const columns: ColumnProps<IRole.Info>[] = [
     label: '状态',
     tag: true,
     width: 80,
-    enum: optionsStore.getDictOptions('account_status'),
+    enum: optionsStore.getDictOptions('account_type'),
     fieldNames: { label: 'codeName', value: 'code', tagType: 'callbackShowStyle' }
   },
   { prop: 'last_login_time', label: '最后登录' },

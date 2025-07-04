@@ -64,13 +64,18 @@ export namespace IUser {
   }
 
   export interface PasswordForm {
-    oldPwd: string;
-    newPwd: string;
+    id: number;
+    old_password: string;
+    new_password: string;
   }
 
   export interface Options {
     id: number;
     username: string;
     nickname: string;
+  }
+
+  export interface UserInfoResponse {
+    user: Info;
   }
 }

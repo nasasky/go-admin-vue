@@ -59,3 +59,11 @@ export const getSystemInfo = () => {
 export const getSystemInfoList = () => {
   return http.get<ApiResponse<SystemInfoListResult>>(ADMIN_MODULE + "/system/info/list")
 }
+
+/**
+ * 获取系统配置信息（首页）
+ * @returns {*}
+ */
+export const getSystemInfoFirst = () => {
+  return http.get<SystemInfo>(ADMIN_MODULE + "/system/info/first")
+}

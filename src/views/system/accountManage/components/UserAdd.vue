@@ -102,51 +102,11 @@ const optionsStore = useOptionsStore();
 const rules = reactive({
   username: [
     { required: true, message: '用户名是必填项', trigger: 'blur' },
-    { min: 3, max: 32, message: '用户名长度应在3到32个字符之间', trigger: 'blur' },
-    { pattern: /^[a-zA-Z0-9_]+$/, message: '用户名只能包含字母、数字和下划线', trigger: 'blur' },
-    { 
-      validator: (rule: any, value: string, callback: Function) => {
-        if (!value) {
-          callback();
-          return;
-        }
-        if (/^\d+$/.test(value)) {
-          callback(new Error('用户名不能为纯数字'));
-        } else {
-          callback();
-        }
-      }, 
-      trigger: 'blur' 
-    }
+    { min: 2, max: 32, message: '用户名长度应在2到32个字符之间', trigger: 'blur' }
   ],
   password: [
     { required: true, message: '密码是必填项', trigger: 'blur' },
-    { min: 6, max: 32, message: '密码长度应在6到32个字符之间', trigger: 'blur' },
-    { 
-      validator: (rule: any, value: string, callback: Function) => {
-        if (!value) {
-          callback();
-          return;
-        }
-        const hasUpperCase = /[A-Z]/.test(value);
-        const hasLowerCase = /[a-z]/.test(value);
-        const hasNumber = /\d/.test(value);
-        const hasSpecial = /[@$!%*?&]/.test(value);
-        
-        if (!hasUpperCase) {
-          callback(new Error('密码必须包含大写字母'));
-        } else if (!hasLowerCase) {
-          callback(new Error('密码必须包含小写字母'));
-        } else if (!hasNumber) {
-          callback(new Error('密码必须包含数字'));
-        } else if (!hasSpecial) {
-          callback(new Error('密码必须包含特殊字符(@$!%*?&)'));
-        } else {
-          callback();
-        }
-      },
-      trigger: 'blur'
-    }
+    { min: 6, max: 32, message: '密码长度应在6到32个字符之间', trigger: 'blur' }
   ],
   phone: [
     { required: true, message: '手机号是必填项', trigger: 'blur' },

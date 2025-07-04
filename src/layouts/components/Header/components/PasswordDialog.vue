@@ -33,6 +33,7 @@ import { validatePasswordFormat } from '@/config/validator';
 import { changePassword } from '@/api/modules/system/user';
 import { ElMessage } from 'element-plus';
 import { IS_PREVIEW } from '@/config';
+import { useUserStore } from '@/stores/modules/user';
 
 const validateOldNewPassword = (rule: any, value: any, callback: (error?: string | Error) => void) => {
   if (value === formData.value.oldPwd) {
@@ -69,6 +70,7 @@ const formData = ref({
   newPwdConfirm: ''
 });
 
+const userStore = useUserStore();
 const ruleFormRef = ref();
 const handleSubmit = () => {
   ruleFormRef.value?.validate(async (valid: boolean) => {
@@ -77,7 +79,12 @@ const handleSubmit = () => {
       return ElMessage.warning({ message: '预览环境，禁止修改密码，请谅解！' });
     }
     try {
-      await changePassword(formData.value);
+      const params = {
+        id: userStore.userInfo.id || 0,
+        old_password: formData.value.oldPwd,
+        new_password: formData.value.newPwd
+      };
+      await changePassword(params);
       ElMessage.success({ message: `修改密码成功！` });
       visible.value = false;
     } catch (error) {

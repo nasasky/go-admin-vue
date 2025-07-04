@@ -44,7 +44,7 @@
         >
           编辑
         </el-button>
-        <el-button v-auth="'sys.menu.delete_btn'" v-if="row.id !== 1" type="primary" link :icon="Delete" @click="deleteInfo(row)">
+        <el-button v-if="row.id !== 1" type="primary" link :icon="Delete" @click="deleteInfo(row)">
           删除
         </el-button>
       </template>
@@ -76,7 +76,7 @@ const columns: ColumnProps<IRole.Info>[] = [
   { prop: 'role_name', label: '角色名称' },
   // { prop: 'permissions', tag: true, label: '标识' },
   { prop: 'role_desc', label: '备注' },
-  { prop: 'update_time', label: '创建时间' },
+  { prop: 'create_time', label: '创建时间' },
   { prop: 'update_time', label: '修改时间' },
   { prop: 'operation', label: '操作', width: 250, fixed: 'right' }
 ];
@@ -115,13 +115,16 @@ const openRolePermissions = (title: string, row = {}) => {
 
 // 删除信息
 const deleteInfo = async (params: IRole.Info) => {
-  await useHandleData(deleteRole, { ids: [params.id] }, `删除【${params.roleName}】角色`);
+  await useHandleData((id: number) => deleteRole(id), params.id, `删除【${params.roleName}】角色`);
   proTableRef.value?.getTableList();
 };
 
 // 批量删除信息
 const batchDelete = async (ids: (string | number)[]) => {
-  await useHandleData(deleteRole, { ids }, '删除所选角色信息');
+  // 由于新接口只支持单个删除，需要循环删除
+  for (const id of ids) {
+    await useHandleData((id: number) => deleteRole(id), id, `删除角色ID: ${id}`);
+  }
   proTableRef.value?.clearSelection();
   proTableRef.value?.getTableList();
 };

@@ -16,3 +16,14 @@ export namespace ICaptcha {
     moveEncrypted: string;
   }
 }
+
+// 验证码模块
+export namespace ICaptcha {
+  export interface ImageCaptchaResult {
+    data: string;  // SVG 字符串
+  }
+
+  export interface VerifyParams {
+    code: string;   // 用户输入的验证码
+  }
+}

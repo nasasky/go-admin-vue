@@ -5,26 +5,17 @@
         <template #label> 用户名 </template>
         {{ info?.username }}
       </el-descriptions-item>
-      <el-descriptions-item>
+      <!-- <el-descriptions-item>
         <template #label> 昵称 </template>
         {{ info?.nickname }}
-      </el-descriptions-item>
+      </el-descriptions-item> -->
       <el-descriptions-item>
         <template #label> 手机号 </template>
         {{ info?.phone }}
       </el-descriptions-item>
-      <el-descriptions-item>
-        <template #label> 身份证 </template>
-        {{ info?.idCard }}
-      </el-descriptions-item>
-      <el-descriptions-item>
-        <template #label> 性别 </template>
-        {{ showSex(info?.sex) }}
-      </el-descriptions-item>
-      <el-descriptions-item>
-        <template #label> 年龄 </template>
-        {{ info?.age }}
-      </el-descriptions-item>
+    
+
+  
     </el-descriptions>
     <template #footer>
       <span class="dialog-footer">
@@ -49,7 +40,7 @@ const openDialog = () => {
 const info = ref<IUser.Info>();
 const loadInfo = () => {
   getUserinfo().then(res => {
-    info.value = res.data;
+    info.value = res.data.user;
   });
 };
 

@@ -5,6 +5,7 @@ export namespace ILogin {
     password: string;
     clientId: string;
     grantType: string;
+    captcha: string;  // 验证码
   }
 
   export interface LoginInfo {

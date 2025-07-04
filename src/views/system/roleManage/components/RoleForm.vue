@@ -8,7 +8,7 @@
       :model="paramsProps.row"
       @submit.enter.prevent="handleSubmit"
     >
-      <el-form-item label="角色名称" prop="role_name">
+      <el-form-item label="角色名称" prop="role_name" required>
         <el-input
           :disabled="paramsProps.row.isLock == 'T'"
           v-model="paramsProps.row.role_name"
@@ -16,15 +16,7 @@
           clearable
         />
       </el-form-item>
-      <!-- <el-form-item label="标识" prop="permissions">
-        <el-input
-          :disabled="paramsProps.row.isLock == 'T'"
-          v-model="paramsProps.row.permissions"
-          placeholder="请填写标识"
-          clearable
-        />
-      </el-form-item> -->
-      <el-form-item label="备注" prop="role_desc">
+      <el-form-item label="备注" prop="role_desc" required>
         <el-input v-model="paramsProps.row.role_desc" placeholder="请填写备注" :rows="2" type="textarea" clearable />
       </el-form-item>
     </el-form>
@@ -44,7 +36,14 @@ defineOptions({
 });
 
 const rules = ref({
-  roleName: [{ required: true, message: '请填写角色名称' }]
+  role_name: [
+    { required: true, message: '请填写角色名称', trigger: 'blur' },
+    { min: 2, max: 20, message: '角色名称长度在 2 到 20 个字符', trigger: 'blur' }
+  ],
+  role_desc: [
+    { required: true, message: '请填写备注', trigger: 'blur' },
+    { max: 200, message: '备注长度不能超过 200 个字符', trigger: 'blur' }
+  ]
 });
 
 const visible = ref(false);

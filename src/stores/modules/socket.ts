@@ -8,6 +8,9 @@ import { ref } from 'vue';
 import { ElMessageBox } from 'element-plus';
 import { useAuthStore } from '@/stores/modules/auth';
 
+// 废弃警告：这个store已经被废弃，请使用websocketStore代替
+console.warn('警告: socketStore已经被废弃，请使用websocketStore代替。这个store将在未来版本中移除。');
+
 // 是否使用socket 当 import.meta.env.VITE_SOCKET_URL 不为空时，启用websocket
 //const useSocket = Object.prototype.hasOwnProperty.call(import.meta.env, 'VITE_SOCKET_URL');
 const useSocket = Object.hasOwn(import.meta.env, 'VITE_SOCKET_URL');

@@ -27,26 +27,6 @@
           </el-button>
         </template>
 
-        <!-- 自定义列插槽 -->
-        <template #cover="{ row }">
-          <div class="image-wrapper" v-if="row.cover" @click="handlePreview(row.cover)">
-            <el-image 
-              :src="row.cover" 
-              fit="cover"
-              class="goods-image"
-            >
-              <template #error>
-                <div class="image-placeholder">
-                  <el-icon><Picture /></el-icon>
-                </div>
-              </template>
-            </el-image>
-          </div>
-          <div v-else class="image-placeholder">
-            <el-icon><Picture /></el-icon>
-          </div>
-        </template>
-
         <template #price="{ row }">
           <span class="price">¥{{ row.price }}</span>
         </template>
@@ -77,7 +57,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, h } from 'vue';
 import { CirclePlus, Delete, EditPen, Upload, Download, Picture } from '@element-plus/icons-vue';
 import ProTable from '@/components/ProTable/index.vue';
 import {
@@ -105,10 +85,46 @@ const proTableRef = ref<ProTableInstance>();
 // 表格配置项
 const columns: ColumnProps<ITeacherStatistics.Row>[] = [
   { type: 'selection', width: 55 },
-  { prop: 'goods_name', label: '商品名称', search: { el: 'input' } },
-  { prop: 'cover', label: '商品图片', width: 100 },
-  { prop: 'price', label: '价格', width: 100 },
-  { prop: 'stock', label: '库存量', width: 100 },
+  { prop: 'goods_name', label: '商品名称' },
+  { 
+    prop: 'cover', 
+    label: '商品图片',
+    width: 120,
+    showOverflowTooltip: false,
+    render: (scope: { row: any }) => {
+      if (scope.row.cover) {
+        return h('img', {
+          src: scope.row.cover,
+          style: { 
+            width: '100px', 
+            height: '60px',
+            objectFit: 'cover',
+            cursor: 'pointer',
+            borderRadius: '4px',
+            border: '1px solid #eee'
+          },
+          onClick: () => previewImage(scope.row.cover)
+        });
+      } else {
+        return h('div', {
+          style: {
+            width: '100px',
+            height: '60px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: '#f5f7fa',
+            color: '#909399',
+            fontSize: '20px',
+            borderRadius: '4px',
+            border: '1px solid #eee'
+          }
+        }, [h('el-icon', {}, [h(Picture)])]);
+      }
+    }
+  },
+  { prop: 'price', label: '价格'},
+  { prop: 'stock', label: '库存量'},
   {
     prop: 'status',
     label: '状态',
@@ -121,8 +137,8 @@ const columns: ColumnProps<ITeacherStatistics.Row>[] = [
       tagType: 'callbackShowStyle'
     }
   },
-  { prop: 'create_time', label: '创建时间', width: 180 },
-  { prop: 'operation', label: '操作', width: 150, fixed: 'right' }
+  { prop: 'create_time', label: '创建时间' },
+  { prop: 'operation', label: '操作', fixed: 'right' }
 ];
 
 // 搜索条件项
@@ -168,7 +184,7 @@ const formatParams = (params: ITeacherStatistics.Query) => {
 };
 
 // 打开 drawer(新增、查看、编辑)
-const teacherStatisticsRef = ref<InstanceType<typeof TeacherStatisticsForm>>();
+const teacherStatisticsRef = ref<InstanceType<typeof ProductStatisticsForm>>();
 const openAddEdit = async (title: string, row: any = {}, isAdd = true) => {
   if (!isAdd) {
     const record = await getDetailApi({ id: row?.id });
@@ -184,7 +200,7 @@ const openAddEdit = async (title: string, row: any = {}, isAdd = true) => {
 };
 
 // 删除信息
-const deleteInfo = async (params: ITeacherStatistics.Row) => {
+const deleteInfo = async (params: any) => {
   await useHandleData(removeApi, { ids: [params.id] }, `删除【${params.goods_name}】商品`);
   proTableRef.value?.getTableList();
 };
@@ -221,7 +237,8 @@ const downloadFile = async () => {
 const showViewer = ref(false);
 const previewUrl = ref('');
 
-const handlePreview = (url: string) => {
+// 预览图片
+const previewImage = (url: string) => {
   previewUrl.value = url;
   showViewer.value = true;
 };
@@ -242,38 +259,6 @@ const handlePreview = (url: string) => {
           margin-right: 0;
         }
       }
-    }
-
-    :deep(.image-wrapper) {
-      cursor: pointer;
-      width: 60px;
-      height: 60px;
-      border-radius: 4px;
-      overflow: hidden;
-      transition: all 0.3s;
-
-      &:hover {
-        transform: scale(1.05);
-        box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-      }
-    }
-
-    :deep(.goods-image) {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-
-    :deep(.image-placeholder) {
-      width: 60px;
-      height: 60px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #f5f7fa;
-      color: #909399;
-      font-size: 20px;
-      border-radius: 4px;
     }
 
     :deep(.price) {

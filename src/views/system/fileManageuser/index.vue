@@ -10,7 +10,15 @@
         :request-api="getTableList" 
         :border="false"
         row-key="id"
+        :search-col="{ xs: 1, sm: 2, md: 4, lg: 6, xl: 8 }"
       >
+        <!-- 表格 header 按钮 -->
+        <template #tableHeader>
+          <el-button type="danger" @click="handleClearLog" :loading="clearLoading">
+            <el-icon><Delete /></el-icon>
+            一键清除
+          </el-button>
+        </template>
         <!-- 自定义列插槽 -->
         <template #url="{ row }">
           <div class="file-actions">
@@ -110,22 +118,21 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import ProTable from '@/components/ProTable/index.vue';
-import { getUserFileListApi } from '@/api/modules/system/file';
+import { getUserFileListApi, clearUserLogApi } from '@/api/modules/system/file';
 import type { ColumnProps, ProTableInstance, SearchProps } from '@/components/ProTable/interface';
-import type { ISysFile } from '@/api/interface/system/file';
-import { useOptionsStore } from '@/stores/modules/options';
-import { View, Download, Document } from '@element-plus/icons-vue';
+import type { ISysFileQuery, ISysFileRow } from '@/api/interface/system/file';
+import { View, Download, Document, Delete } from '@element-plus/icons-vue';
 import { ElImageViewer } from 'element-plus';
+import { ElMessage, ElMessageBox } from 'element-plus';
 
 defineOptions({
   name: 'SysFileView'
 });
 
-const optionsStore = useOptionsStore();
 const proTableRef = ref<ProTableInstance>();
 
 // 表格配置项
-const columns: ColumnProps<ISysFile.Row>[] = [
+const columns: ColumnProps<ISysFileRow>[] = [
   { prop: 'path', label: '访问接口地址',  },
   { prop: 'request_params', label: '请求参数', showOverflowTooltip: true },
   { prop: 'status_code', label: '状态码',},
@@ -139,13 +146,23 @@ const columns: ColumnProps<ISysFile.Row>[] = [
 
 // 搜索条件项
 const searchColumns: SearchProps[] = [
-  { prop: 'filename', label: '文件名', el: 'input' },
-  { prop: 'username', label: '访问用户', el: 'input' },
-  { prop: 'path', label: '接口地址', el: 'input' },
+  { prop: 'username', label: '用户', el: 'input', span: 1, props: { placeholder: '用户' } },
+  { prop: 'user_id', label: '用户ID', el: 'input', span: 1, props: { placeholder: '用户ID' } },
+  { prop: 'path', label: '接口', el: 'input', span: 1, props: { placeholder: '接口' } },
+  { prop: 'method', label: '方法', el: 'select', span: 1, enum: [
+    { label: 'GET', value: 'GET' },
+    { label: 'POST', value: 'POST' },
+    { label: 'PUT', value: 'PUT' },
+    { label: 'DELETE', value: 'DELETE' },
+    { label: 'PATCH', value: 'PATCH' }
+  ] },
+  { prop: 'status_code', label: '状态码', el: 'input', span: 1, props: { placeholder: '状态码' } },
+  { prop: 'client_ip', label: 'IP', el: 'input', span: 1, props: { placeholder: 'IP' } },
   {
     prop: 'timestamp',
-    label: '访问时间',
+    label: '时间',
     el: 'date-picker',
+    span: 2,
     props: {
       type: 'datetimerange',
       valueFormat: 'YYYY-MM-DD HH:mm:ss'
@@ -154,16 +171,16 @@ const searchColumns: SearchProps[] = [
 ];
 
 // 获取table列表
-const getTableList = (params: ISysFile.Query) => {
+const getTableList = (params: ISysFileQuery) => {
   let newParams = formatParams(params);
   return getUserFileListApi(newParams);
 };
 
-const formatParams = (params: ISysFile.Query) => {
+const formatParams = (params: ISysFileQuery) => {
   let newParams = JSON.parse(JSON.stringify(params));
   if (newParams.timestamp) {
-    newParams.createTimeStart = newParams.timestamp[0];
-    newParams.createTimeEnd = newParams.timestamp[1];
+    newParams.start_date = newParams.timestamp[0];
+    newParams.end_date = newParams.timestamp[1];
     delete newParams.timestamp;
   }
   return newParams;
@@ -185,9 +202,9 @@ const getStatusType = (status: number) => {
 
 // 详情弹框
 const detailVisible = ref(false);
-const currentDetail = ref<ISysFile.Row>({});
+const currentDetail = ref<ISysFileRow>({});
 
-const showDetail = (row: ISysFile.Row) => {
+const showDetail = (row: ISysFileRow) => {
   currentDetail.value = row;
   detailVisible.value = true;
 };
@@ -206,9 +223,40 @@ const formatJson = (json: string) => {
 const previewVisible = ref(false);
 const previewUrl = ref('');
 
-const handlePreview = (row: ISysFile.Row) => {
-  previewUrl.value = row.url;
-  previewVisible.value = true;
+const handlePreview = (row: ISysFileRow) => {
+  if (row.url) {
+    previewUrl.value = row.url;
+    previewVisible.value = true;
+  }
+};
+
+// 清除日志相关
+const clearLoading = ref(false);
+
+const handleClearLog = async () => {
+  try {
+    await ElMessageBox.confirm(
+      '确定要清除所有用户日志吗？此操作不可恢复！',
+      '确认清除',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    );
+    
+    clearLoading.value = true;
+    await clearUserLogApi();
+    ElMessage.success('清除成功');
+    // 刷新表格数据
+    proTableRef.value?.getTableList();
+  } catch (error: any) {
+    if (error !== 'cancel') {
+      ElMessage.error('清除失败：' + (error.message || '未知错误'));
+    }
+  } finally {
+    clearLoading.value = false;
+  }
 };
 </script>
 

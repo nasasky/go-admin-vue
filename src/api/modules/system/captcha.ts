@@ -14,3 +14,11 @@ export const getImageCodeApi = () => {
 export const verifyImageCodeApi = (params: ICaptcha.VerifyImageParams) => {
   return http.post(ADMIN_MODULE + `/captcha/check`, params, { loading: false });
 };
+
+/**
+ * 获取图片验证码
+ * @returns SVG字符串
+ */
+export const getImageCaptcha = () => {
+  return http.get<string>(ADMIN_MODULE + `/captcha`);
+};

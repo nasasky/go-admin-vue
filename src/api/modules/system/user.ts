@@ -64,7 +64,7 @@ export const setUserRole = (params: IUser.RoleForm) => {
  * @returns {*}
  */
 export const changePassword = (params: IUser.PasswordForm) => {
-  return http.put(ADMIN_MODULE + `/sys-user/password`, params);
+  return http.put(ADMIN_MODULE + `/user/password`, params);
 };
 
 /**
@@ -81,7 +81,7 @@ export const resetPassword = (params: { id: number }) => {
  * @returns {*}
  */
 export const getUserinfo = () => {
-  return http.get<IUser.Info>(ADMIN_MODULE + `/sys-user/userinfo`);
+  return http.get<IUser.UserInfoResponse>(ADMIN_MODULE + `/tenants/info`);
 };
 
 /**

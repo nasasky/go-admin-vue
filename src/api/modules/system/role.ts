@@ -32,11 +32,11 @@ export const editRole = (params: IRole.Form) => {
 
 /**
  * 删除角色
- * @param params
+ * @param id
  * @returns {*}
  */
-export const deleteRole = (params: { ids: number[] }) => {
-  return http.delete(ADMIN_MODULE + `/role/detail`, params);
+export const deleteRole = (id: number) => {
+  return http.delete(ADMIN_MODULE + `/role/delete/${id}`);
 };
 
 /**
