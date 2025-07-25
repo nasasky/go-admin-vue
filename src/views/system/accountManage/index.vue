@@ -35,16 +35,15 @@
           >
             批量删除
           </el-button>
-          <el-button type="info" :icon="Unlock" plain :disabled="!scope.isSelected" @click="unlock(scope.selectedListIds)">
-            解锁
-          </el-button>
+         
         </template>
 
         <template #logo="{ row }">
           <el-avatar 
             :size="40" 
-            :src="row.logo || 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'"
-            :class="['user-avatar', { 'no-image': !row.logo }]"
+            :src="row.avatar || 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'"
+            :class="['user-avatar', { 'no-image': !row.avatar }]"
+            @click="previewAvatar(row.avatar || 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png')"
           />
         </template>
 
@@ -93,9 +92,7 @@
             <el-button type="primary" link :icon="EditPen" @click="openUserEdit('编辑用户', row)">
               编辑
             </el-button>
-            <el-button type="primary" link :icon="Unlock" @click="unlock([row.id])">
-              解锁
-            </el-button>
+          
             <el-button type="danger" link :icon="Delete" @click="deleteInfo(row)">
               删除
             </el-button>
@@ -108,6 +105,16 @@
       <UserDeptForm ref="userDeptFormRef" @submit="refreshDeptTree" />
       <UserDataPermissions ref="userDataPermissionsRef" />
     </div>
+    
+    <!-- 图片预览组件 -->
+    <el-image-viewer
+      v-if="showViewer"
+      @close="showViewer = false"
+      :url-list="[previewUrl]"
+      :initial-index="0"
+      :hide-on-click-modal="true"
+      teleported
+    />
   </div>
 </template>
 
@@ -159,8 +166,7 @@ onMounted(async () => {
 const columns: ColumnProps<IRole.Info>[] = [
   { type: 'selection', width: 55, selectable: row => row.id !== 1 },
   { prop: 'logo', label: '头像', width: 70 },
-  { prop: 'username', label: '账户', align: 'left' },
-  { prop: 'nickname', label: '昵称',  align: 'left' },
+  { prop: 'username', label: '账户名称' },
   { prop: 'phone', label: '手机号' },
   { prop: 'role_name', label: '角色' },
   {
@@ -345,6 +351,16 @@ const openUserDataPermissions = (title: string, row = {}) => {
   userDataPermissionsRef.value?.acceptParams(params);
   proTableRef.value?.getTableList();
 };
+
+// 图片预览相关
+const showViewer = ref(false);
+const previewUrl = ref('');
+
+// 预览头像
+const previewAvatar = (url: string) => {
+  previewUrl.value = url;
+  showViewer.value = true;
+};
 </script>
 
 <style scoped lang="scss">
@@ -382,6 +398,7 @@ const openUserDataPermissions = (title: string, row = {}) => {
     :deep(.user-avatar) {
       border: 1px solid #eee;
       transition: transform 0.3s;
+      cursor: pointer;
       &:hover {
         transform: scale(1.1);
       }

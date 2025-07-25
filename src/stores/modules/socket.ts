@@ -119,8 +119,16 @@ export const useSocketStore = defineStore('socket', () => {
     if (!useSocket) return;
     if (socket.value) return;
     const userStore = useUserStore();
+    
+    // 确保在HTTPS页面上使用WSS协议
+    const wsUrl = new URL(socketUrl.toString());
+    if (window.location.protocol === 'https:' && wsUrl.protocol === 'ws:') {
+      wsUrl.protocol = 'wss:';
+      console.log('检测到HTTPS环境，已将WebSocket协议更改为WSS');
+    }
+    
     // 建立WebSocket连接
-    const webSocket = new WebSocket(socketUrl, [userStore.token]);
+    const webSocket = new WebSocket(wsUrl.toString(), [userStore.token]);
 
     // 监听WebSocket事件
     webSocket.onopen = _onOpen;

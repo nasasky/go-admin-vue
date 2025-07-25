@@ -59,7 +59,15 @@ export const useWebsocketStore = defineStore('websocket', {
           return;
         }
         
-        const wsUrl = import.meta.env.VITE_WEBSOCKET_URL || 'ws://localhost:8080/ws';
+        // 获取配置的WebSocket URL
+        let wsUrl = import.meta.env.VITE_WEBSOCKET_URL || 'ws://localhost:8080/ws';
+        
+        // 确保在HTTPS页面上使用WSS协议
+        if (window.location.protocol === 'https:' && wsUrl.startsWith('ws:')) {
+          wsUrl = wsUrl.replace('ws:', 'wss:');
+          console.log('检测到HTTPS环境，已将WebSocket协议更改为WSS');
+        }
+        
         console.log('正在连接WebSocket:', wsUrl);
         
         this.websocket = new WebSocket(`${wsUrl}?token=${token}`);

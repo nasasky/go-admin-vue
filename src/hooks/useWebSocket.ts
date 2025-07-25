@@ -36,8 +36,15 @@ export function useWebSocket(options: WebSocketOptions) {
   const connect = () => {
     if (socket.value?.readyState === WebSocket.OPEN) return;
     
+    // 确保在HTTPS页面上使用WSS协议
+    let wsUrl = url;
+    if (window.location.protocol === 'https:' && wsUrl.startsWith('ws:')) {
+      wsUrl = wsUrl.replace('ws:', 'wss:');
+      console.log('检测到HTTPS环境，已将WebSocket协议更改为WSS');
+    }
+    
     // 创建新连接
-    socket.value = new WebSocket(url);
+    socket.value = new WebSocket(wsUrl);
     
     // 监听连接打开事件
     socket.value.onopen = (event: Event) => {
